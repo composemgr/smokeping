@@ -1,0 +1,27 @@
+# nginx proxy address - http://172.17.0.1:8100
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "1"
+
+services:
+  smokeping:
+    image: linuxserver/smokeping:latest
+    container_name: smokeping-app
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - smokeping
+    ports:
+      - "8100:80"
+    environment:
+      TZ: ${TZ:-America/New_York}
+    volumes:
+      - ./rootfs/config/smokeping:/config
+      - ./rootfs/data/smokeping:/data
+
+networks:
+  smokeping:
+    external: false
