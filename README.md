@@ -45,8 +45,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/config/smokeping` - Data storage
-- `./rootfs/data/smokeping` - Data storage
+- `./volumes/config/smokeping` - Data storage
+- `./volumes/data/smokeping` - Data storage
 
 ## 🔍 Logging
 
