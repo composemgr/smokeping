@@ -19,8 +19,8 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
     volumes:
-      - ./rootfs/config/smokeping:/config
-      - ./rootfs/data/smokeping:/data
+      - ./volumes/config/smokeping:/config
+      - ./volumes/data/smokeping:/data
 
 networks:
   smokeping:
