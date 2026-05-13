@@ -1,5 +1,6 @@
 # nginx proxy address - http://172.17.0.1:8100
 
+name: smokeping
 x-logging: &default-logging
   driver: json-file
   options:
@@ -7,21 +8,26 @@ x-logging: &default-logging
     max-file: "1"
 
 services:
-  smokeping:
-    image: linuxserver/smokeping:latest
+  app:
+    image: lscr.io/linuxserver/smokeping:latest
+    pull_policy: always
     container_name: smokeping-app
-    restart: unless-stopped
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
     logging: *default-logging
     networks:
       - smokeping
     ports:
-      - "8100:80"
+      - "172.17.0.1:8100:80"
     environment:
       TZ: ${TZ:-America/New_York}
+      PUID: ${SERVICE_USER:-1000}
+      PGID: ${SERVICE_GROUP:-1000}
     volumes:
       - ./volumes/config/smokeping:/config
       - ./volumes/data/smokeping:/data
 
 networks:
   smokeping:
+    name: smokeping
     external: false
