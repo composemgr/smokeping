@@ -17,17 +17,41 @@ services:
     logging: *default-logging
     networks:
       - smokeping
+      - proxy
+      - cloudflare
     ports:
       - "172.17.0.1:8100:80"
     environment:
       TZ: ${TZ:-America/New_York}
       PUID: ${SERVICE_USER:-1000}
       PGID: ${SERVICE_GROUP:-1000}
+      CONTAINER_NAME: smokeping-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     volumes:
       - ./volumes/config/smokeping:/config
       - ./volumes/data/smokeping:/data
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://smokeping-app:80'
+      - 'cloudflare.hostname=smokeping.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.smokeping-app.entrypoints=http'
+      - 'traefik.http.routers.smokeping-app-secure.tls=true'
+      - 'traefik.http.routers.smokeping-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.smokeping-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.smokeping-app.middlewares=smokeping-app-https-redirect'
+      - 'traefik.http.routers.smokeping-app-secure.entrypoints=https'
+      - 'traefik.http.routers.smokeping-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.smokeping-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.smokeping-app-secure.service=smokeping-app'
+      - 'traefik.http.services.smokeping-app.loadbalancer.server.port=80'
 
 networks:
   smokeping:
     name: smokeping
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
