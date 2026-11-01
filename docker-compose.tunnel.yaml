@@ -1,0 +1,41 @@
+# nginx proxy address - http://172.17.0.1:64345
+
+name: smokeping
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: lscr.io/linuxserver/smokeping:latest
+    container_name: smokeping-app
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: smokeping-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      PUID: ${SERVICE_USER:-1000}
+      PGID: ${SERVICE_GROUP:-1000}
+    volumes:
+      - './volumes/config/smokeping:/config:z'
+      - './volumes/data/smokeping:/data:z'
+    labels:
+      - 'cloudflare.enable=true'
+      - 'cloudflare.service=http://smokeping-app:80'
+      - 'cloudflare.hostname=${BASE_HOST_NAME:-$HOSTNAME}'
+    networks:
+      - smokeping
+      - cloudflare
+
+networks:
+  smokeping:
+    name: smokeping
+    external: false
+  cloudflare:
+    external: true
